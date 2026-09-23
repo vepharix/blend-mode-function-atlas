@@ -22,7 +22,6 @@ import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = REPO_ROOT / "figures"
-DOCS_DIR = REPO_ROOT / "docs"
 N = 1001
 
 
@@ -219,7 +218,6 @@ def draw_panel(ax, R, title, show_labels=True):
 
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
     report = verify()
     values = np.linspace(0.0, 1.0, N)
     B, S = np.meshgrid(values, values)
@@ -254,19 +252,8 @@ def main():
         fig.savefig(singles / f"{safe}.png", dpi=300, facecolor="white")
         plt.close(fig)
 
-    with (DOCS_DIR / "FORMULAS_AND_CHECKS.txt").open("w", encoding="utf-8") as f:
-        f.write("Definitions (B,S,R normalized to [0,1])\n")
-        f.write("=========================================\n")
-        for name, formula in FORMULAS.items():
-            f.write(f"{name}: {formula}\n")
-        f.write("\nNotes\n=====\n")
-        f.write("D(B)=((16B-12)B+4)B for B<=0.25; otherwise sqrt(B).\n")
-        f.write("Darker/Lighter Color select an entire RGB pixel; their grayscale maps equal Darken/Lighten.\n")
-        f.write("All arithmetic modes shown here are clamped to [0,1].\n\n")
-        f.write("Automated checks\n================\n")
-        f.write("\n".join(report) + "\n")
     print(f"Generated {len(results)} modes in: {OUT_DIR}")
-    print("All verification checks passed.")
+    print(f"All {len(report)} verification checks passed.")
 
 
 if __name__ == "__main__":

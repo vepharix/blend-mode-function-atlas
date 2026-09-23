@@ -1,45 +1,58 @@
-# Blend Mode Function Atlas / 混合模式函数图谱
+# Blend Mode Function Atlas
 
-A verified visual reference for 17 common image blend-mode functions. Each map uses backdrop `B` on the horizontal axis, source `S` on the vertical axis, and a shared color scale for result `R`.
+Let $B,S,R\in[0,1]$ denote backdrop, source, and result. Let
 
-这是一个经过数值校验的混合模式函数图谱，包含 17 种常见模式。每张图以底层 `B` 为横轴、上层 `S` 为纵轴，并用统一色标表示输出 `R`。
+$$C(x)=\min(1,\max(0,x)).$$
 
-![Blend mode function overview](figures/blend_modes_overview.png)
+## Darken
 
-## Included / 内容
+| Mode | Formula |
+|---|---|
+| Darken | $R=\min(B,S)$ |
+| Multiply | $R=BS$ |
+| Color Burn | $R=0$ if $S=0$; otherwise $R=\max\left(0,1-\frac{1-B}{S}\right)$ |
+| Linear Burn | $R=C(B+S-1)$ |
+| Darker Color (grayscale) | $R=\min(B,S)$ |
 
-- High-resolution overview and individual maps / 高分辨率总览与单图
-- Bilingual Chinese-English PDF atlas / 中英文对照 PDF 图谱
-- Explicit piecewise formulas and boundary behavior / 明确的分段公式与边界行为
-- Automated checks on critical points and the full sampled grid / 关键点与完整采样网格的自动校验
+## Lighten
 
-The implementation pays special attention to Overlay, Soft Light, Hard Light, Vivid Light, Pin Light, Hard Mix, Color Burn, and Color Dodge. Arithmetic outputs are clamped to `[0,1]` where required.
+| Mode | Formula |
+|---|---|
+| Lighten | $R=\max(B,S)$ |
+| Screen | $R=1-(1-B)(1-S)$ |
+| Color Dodge | $R=1$ if $S=1$; otherwise $R=\min\left(1,\frac{B}{1-S}\right)$ |
+| Linear Dodge (Add) | $R=C(B+S)$ |
+| Lighter Color (grayscale) | $R=\max(B,S)$ |
 
-实现中特别核对了 Overlay、Soft Light、Hard Light、Vivid Light、Pin Light、Hard Mix、Color Burn 与 Color Dodge，并在需要时将算术结果截断到 `[0,1]`。
+## Contrast and light
 
-## Repository layout / 仓库结构
+| Mode | Formula |
+|---|---|
+| Overlay | $R=2BS$ if $B\leq\frac12$; otherwise $R=1-2(1-B)(1-S)$ |
+| Soft Light | $R=B-(1-2S)B(1-B)$ if $S\leq\frac12$; otherwise $R=B+(2S-1)(D(B)-B)$ |
+| Hard Light | $R=2BS$ if $S\leq\frac12$; otherwise $R=1-2(1-B)(1-S)$ |
+| Vivid Light | $R=\operatorname{Burn}(B,2S)$ if $S<\frac12$; otherwise $R=\operatorname{Dodge}(B,2S-1)$ |
+| Linear Light | $R=C(B+2S-1)$ |
+| Pin Light | $R=\min(B,2S)$ if $S<\frac12$; otherwise $R=\max(B,2S-1)$ |
+| Hard Mix | $R=0$ if $\operatorname{VividLight}(B,S)<\frac12$; otherwise $R=1$ |
 
-```text
-src/                           reproducible generators / 可复现生成脚本
-figures/                       overview and individual maps / 总览与单图
-docs/                          PDF atlas and verification notes / PDF 与校验说明
-requirements.txt               Python dependencies / Python 依赖
-```
+where
 
-## Reproduce / 重新生成
+$$
+D(B)=
+\begin{cases}
+((16B-12)B+4)B, & B\leq\frac14,\\
+\sqrt{B}, & B>\frac14.
+\end{cases}
+$$
+
+For RGB images, Darker Color and Lighter Color select a whole pixel by luminosity; the scalar formulas above are their grayscale reductions.
+
+## Reproduce
 
 ```bash
 python -m pip install -r requirements.txt
 python src/generate_blend_mode_maps.py
-python src/build_bilingual_pdf.py
 ```
 
-Both scripts resolve paths relative to their own location in the packaged repository. Python 3.10 or newer is recommended.
-
-两个脚本均以仓库内路径工作。建议使用 Python 3.10 或更高版本。
-
-## Notes / 说明
-
-`Darker Color` and `Lighter Color` compare whole RGB pixels. Their scalar grayscale maps reduce to `Darken` and `Lighten`, which is how they are represented here.
-
-`Darker Color` 与 `Lighter Color` 在 RGB 图像中比较整像素。本项目中的二维标量图展示灰度情形，此时它们分别等同于 `Darken` 与 `Lighten`。
+![All blend-mode functions](figures/blend_modes_overview.png)
